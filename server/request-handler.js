@@ -1,3 +1,5 @@
+var url = require('url');
+
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -15,20 +17,23 @@ this file and include it in basic-server.js so that it actually works.
 var results = [
   {
     username: 'Jono',
-    text: 'Do my bidding!',
+    message: 'Do my bidding!',
     roomname: 'lobby',
+    createdAt: 'Mon Apr 17 2017 21:16:46 GMT-0700 (PDT)',
     objectId: 0
   },
   {
     username: 'Bono',
-    text: 'Bid my doing!',
+    message: 'Bid my doing!',
     roomname: 'lobby',
+    createdAt: 'Mon Apr 17 2017 21:17:24 GMT-0700 (PDT)',
     objectId: 1
   },
   {
     username: 'Pono',
-    text: 'My bidding do!',
+    message: 'My bidding do!',
     roomname: 'lobby',
+    createdAt: 'Mon Apr 17 2017 21:17:37 GMT-0700 (PDT)',
     objectId: 2
   }
 ];
@@ -75,11 +80,12 @@ var requestHandler = function(request, response) {
   // console.logs in your code.
 
   var method = request.method;
-  var url = request.url;
+  var urlParts = url.parse(request.url, true);
+  var pathname = urlParts.pathname;
 
-  console.log('Serving request type ' + method + ' for url ' + url);
+  console.log('Serving request type ' + method + ' for url ' + pathname);
 
-  if (method === 'GET' && url === '/') {
+  if (method === 'GET' && pathname === '/') {
     // The outgoing status.
     var statusCode = 200;
 
@@ -104,22 +110,42 @@ var requestHandler = function(request, response) {
     // Calling .end "flushes" the response's internal buffer, forcing
     // node to actually send all the data over to the client.
     response.end('Hello, World!');
-  } if (method === 'OPTIONS' && url === '/classes/messages') {
+  } if (method === 'OPTIONS' && pathname === '/classes/messages') {
     response.writeHead(200, defaultCorsHeaders);
     response.end();
-  } else if (method === 'GET' && url === '/classes/messages') {
+  } else if (method === 'GET' && pathname === '/classes/messages') {
+    var query = urlParts.query;
     var statusCode = 200;
     var headers = defaultCorsHeaders;
     headers['Content-Type'] = 'application/json';
 
-    var responseBody = {
-      results: results
-    };
+
+    for (var key in query) {
+      if (key === 'order') {
+        var order = query[key][0];
+        var keyToSort = query[key].slice(1);
+        if (order === '-' && keyToSort === 'createdAt') {
+          var sortedResults = results.sort(function(a, b) {
+            var dateA = new Date(a.createdAt);
+            var dateB = new Date(b.createdAt);
+            return dateB - dateA;
+          });
+        }
+      }
+    }
+
+    var responseBody = {};
+
+    if (sortedResults === undefined) {
+      responseBody.results = results;
+    } else {
+      responseBody.results = sortedResults;
+    }
 
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(responseBody));
 
-  } else if (method === 'POST' && url === '/classes/messages') {
+  } else if (method === 'POST' && pathname === '/classes/messages') {
     var statusCode = 201;
     var headers = defaultCorsHeaders;
 
@@ -128,6 +154,7 @@ var requestHandler = function(request, response) {
       var message = JSON.parse(chunk.toString());
 
       message.objectId = lastMessageId + 1;
+      message.createdAt = new Date().toString();
 
       results.push(message);
     });
