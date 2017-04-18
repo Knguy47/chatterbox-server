@@ -33,6 +33,23 @@ describe('server', function() {
     });
   });
 
+  it('should return results sorted by time of creation', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Reversi',
+        message: 'This is the latest message'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      request('http://127.0.0.1:3000/classes/messages?order=-createdAt', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        expect(messages[0].username).to.equal('Reversi');
+        done();
+      });
+    });
+  });
+
   it('should accept POST requests to /classes/messages', function(done) {
     var requestParams = {method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
@@ -73,5 +90,41 @@ describe('server', function() {
     });
   });
 
+  it('should create a timestamp for the message after a POST request', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        message: 'Do my bidding!'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        expect(messages[messages.length - 1].createdAt).to.not.be.undefined;
+        done();
+      });
+    });
+  });
+
+  it('should create a unique id for each message after a POST request', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Rono',
+        message: 'Mo dy dibbing?'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        var objectIdSet = new Set(messages.map(function(msg) {
+          return msg.objectId;
+        }));
+        expect(messages.length).to.be.equal(objectIdSet.size);
+        done();
+      });
+    });
+  });
 
 });
