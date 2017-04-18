@@ -1,30 +1,6 @@
 var url = require('url');
 var fs = require('fs');
 
-// var results = [
-//   {
-//     username: 'Jono',
-//     message: 'Do my bidding!',
-//     roomname: 'lobby',
-//     createdAt: 'Mon Apr 17 2017 21:16:46 GMT-0700 (PDT)',
-//     objectId: 0
-//   },
-//   {
-//     username: 'Bono',
-//     message: 'Bid my doing!',
-//     roomname: 'lobby',
-//     createdAt: 'Mon Apr 17 2017 21:17:24 GMT-0700 (PDT)',
-//     objectId: 1
-//   },
-//   {
-//     username: 'Pono',
-//     message: 'My bidding do!',
-//     roomname: 'lobby',
-//     createdAt: 'Mon Apr 17 2017 21:17:37 GMT-0700 (PDT)',
-//     objectId: 2
-//   }
-// ];
-
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -33,15 +9,6 @@ var defaultCorsHeaders = {
 };
 
 var requestHandler = function(request, response) {
-  // request.on('error', function(err) {
-  //   console.error(err);
-  //   response.statusCode = 400;
-  //   response.end();
-  // });
-  // response.on('error', function(err) {
-  //   console.error(err);
-  // });
-
   var method = request.method;
   var urlParts = url.parse(request.url, true);
   var pathname = urlParts.pathname;
