@@ -14,6 +14,7 @@
     "start:es6": "babel-node server/basic-server.js",
     "start:watch": "nodemon --inspect server/basic-server.js",
     "test": "mocha server/spec",
+    "test:express": "mocha server/express/spec",
     "test:es6": "mocha --compilers js:babel-register server/spec",
     "lint": "eslint ./"
   },
@@ -30,5 +31,9 @@
     "presets": [
       "es2015"
     ]
+  },
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2"
   }
 }
