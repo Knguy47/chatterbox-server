@@ -6,7 +6,7 @@ var app = {
   server: 'http://127.0.0.1:3000/classes/messages',
   username: 'anonymous',
   roomname: 'lobby',
-  lastMessageId: 0,
+  lastMessageId: -1,
   friends: {},
   messages: [],
 
@@ -60,20 +60,20 @@ var app = {
     $.ajax({
       url: app.server,
       type: 'GET',
-      // data: { order: '-createdAt' },
+      data: { order: '-createdAt' },
       contentType: 'application/json',
       success: function(data) {
         // Don't bother if we have nothing to work with
         if (!data.results || !data.results.length) { return; }
 
-        // Store messages for caching later
-        app.messages = data.results;
-
         // Get the last message
         var mostRecentMessage = data.results[data.results.length - 1];
 
         // Only bother updating the DOM if we have a new message
-        if (mostRecentMessage.objectId !== app.lastMessageId) {
+        if (data.results.length !== app.messages.length) {
+          // Store messages for caching later
+          app.messages = data.results;
+
           // Update the UI with the fetched rooms
           app.renderRoomList(data.results);
 
@@ -162,7 +162,7 @@ var app = {
     }
 
     var $message = $('<br><span/>');
-    $message.text(message.text).appendTo($chat);
+    $message.text(message.message).appendTo($chat);
 
     // Add the message to the UI
     app.$chats.append($chat);
@@ -214,7 +214,7 @@ var app = {
   handleSubmit: function(event) {
     var message = {
       username: app.username,
-      text: app.$message.val(),
+      message: app.$message.val(),
       roomname: app.roomname || 'lobby'
     };
 
