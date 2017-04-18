@@ -12,7 +12,26 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
-var results = [];
+var results = [
+  {
+    username: 'Jono',
+    text: 'Do my bidding!',
+    roomname: 'lobby',
+    objectId: 0
+  },
+  {
+    username: 'Bono',
+    text: 'Bid my doing!',
+    roomname: 'lobby',
+    objectId: 1
+  },
+  {
+    username: 'Pono',
+    text: 'My bidding do!',
+    roomname: 'lobby',
+    objectId: 2
+  }
+];
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
@@ -31,7 +50,6 @@ var defaultCorsHeaders = {
 };
 
 var requestHandler = function(request, response) {
-
   // request.on('error', function(err) {
   //   console.error(err);
   //   response.statusCode = 400;
@@ -86,6 +104,9 @@ var requestHandler = function(request, response) {
     // Calling .end "flushes" the response's internal buffer, forcing
     // node to actually send all the data over to the client.
     response.end('Hello, World!');
+  } if (method === 'OPTIONS' && url === '/classes/messages') {
+    response.writeHead(200, defaultCorsHeaders);
+    response.end();
   } else if (method === 'GET' && url === '/classes/messages') {
     var statusCode = 200;
     var headers = defaultCorsHeaders;
@@ -103,7 +124,12 @@ var requestHandler = function(request, response) {
     var headers = defaultCorsHeaders;
 
     request.on('data', function(chunk) {
-      results.push(JSON.parse(chunk.toString()));
+      var lastMessageId = results[results.length - 1].objectId;
+      var message = JSON.parse(chunk.toString());
+
+      message.objectId = lastMessageId + 1;
+
+      results.push(message);
     });
     request.on('end', function() {
       var responseBody = results;
